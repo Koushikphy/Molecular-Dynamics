@@ -1,0 +1,42 @@
+# Intialization
+units          real
+dimension      3
+boundary       p p p
+atom_style     full
+kspace_style   pppm 1.0e-4
+neighbor 2.0   bin
+neigh_modify   delay 0 every 1 check yes
+read_data      watersystem.data
+
+group ox type 2
+group hy type 1
+set group ox charge -0.8476
+set group hy charge 0.4238
+mass 1 1.008
+mass 2 15.9994 
+
+### SPC/E Potential Parameters ###
+pair_style lj/cut/coul/long 9.8 9.8
+pair_coeff 1 1 0.000 0.000 
+pair_coeff 1 2 0.000 0.000 
+pair_coeff 2 2 0.15535 3.166
+bond_style  harmonic
+bond_coeff  1 1000.0 1.0
+angle_style harmonic
+angle_coeff 1 100.0 109.47
+
+minimize 0.0 1.0e-6 100 1000
+
+fix 1 all shake 1e-6 40 0 b 1 a 1
+velocity all create 300.0 1234546 dist gaussian
+fix 2 all npt temp 300.0 300.0 100.0 iso 1.0 1.0 1000.0
+
+
+
+thermo      50
+thermo_style custom step temp press vol density
+dump 1 all custom 10 water_npt_u.traj id type element xu yu zu vx vy vz
+dump_modify 1 sort id element H O
+
+timestep 1
+run 10000
